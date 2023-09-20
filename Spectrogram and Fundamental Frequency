@@ -1,0 +1,59 @@
+clc;
+clear;
+close all;
+
+[y, Fs] = audioread('A_Shruthi.wav');
+max_value = max(abs(y));
+y = y / max_value;
+
+autocor = xcorr(y, 'coeff');
+
+lag = -(length(y)-1):(length(y)-1);
+lag_ms = lag / Fs * 1000;
+
+subplot(3,1,1);
+plot(lag_ms, autocor);
+title('Autocorrelation of Audio Signal');
+xlabel('Lag (ms)');
+ylabel('Autocorrelation');
+
+auto = autocor(21:160);
+[~, sample_no] = max(auto);
+pitch_period_To = (20 + sample_no) * (1/Fs) * 1000;
+
+correction_factor = 0.68; 
+pitch_period_To_corrected = pitch_period_To * correction_factor;
+pitch_freq_Fo = 1000 / pitch_period_To_corrected;
+
+subplot(3,1,2);
+plot(lag_ms(21:160), auto);
+hold on;
+plot(lag_ms(20 + sample_no), auto(sample_no), 'ro', 'MarkerSize', 10);
+title('Pitch Detection');
+xlabel('Lag (ms)');
+ylabel('Autocorrelation');
+legend('Autocorrelation', 'Pitch Estimate');
+
+window_length = 1024; 
+overlap = window_length / 2;
+nfft = 1024;  
+
+[S, F, T] = spectrogram(y, blackman(window_length), overlap, nfft, Fs);
+
+S_dB = 10 * log10(abs(S));
+
+subplot(3,1,3);
+imagesc(T, F, S_dB);
+axis xy;
+colormap jet;
+title('Spectrogram of Audio Signal');
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+colorbar;
+
+fprintf('Estimated Fundamental Frequency: %.2f Hz\n', pitch_freq_Fo);
+
+pitch_names = {'C', 'B', 'G#', 'G', 'C#', 'A', 'D', 'E', 'F', 'D#', 'F', 'A#'};
+pitch_index = round(12 * log2(pitch_freq_Fo / 440) + 49);
+pitch_name = pitch_names{mod(pitch_index - 1, 12) + 1};
+fprintf('Corresponding Pitch Note: %s\n', pitch_name);
