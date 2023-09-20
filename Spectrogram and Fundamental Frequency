@@ -53,7 +53,7 @@ colorbar;
 
 fprintf('Estimated Fundamental Frequency: %.2f Hz\n', pitch_freq_Fo);
 
-pitch_names = {'C', 'B', 'G#', 'G', 'C#', 'A', 'D', 'E', 'F', 'D#', 'F', 'A#'};
+pitch_names = {'C', 'B', 'G#', 'G', 'C#', 'A', 'D', 'E', 'F#', 'D#', 'F', 'A#'};
 pitch_index = round(12 * log2(pitch_freq_Fo / 440) + 49);
 pitch_name = pitch_names{mod(pitch_index - 1, 12) + 1};
 fprintf('Corresponding Pitch Note: %s\n', pitch_name);
