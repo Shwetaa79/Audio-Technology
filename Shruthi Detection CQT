@@ -3,23 +3,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 #import libfmp
 
-# Assuming you have captured the audio as 'audio_input.wav'
+
 audio_path = '/content/drive/MyDrive/SEM 7/Audio Technology/Sample Audio Clips/Vadera Daivamu- Panthuvarali - B (bad quality).mp3'
-
-# Load the audio file
 y, sr = librosa.load(audio_path)
-
-# Compute the chromagram
 chroma = librosa.feature.chroma_stft(y=y, sr=sr)
 
 # Compute the Constant-Q Transform
 CQT = librosa.cqt(y, sr=sr)
-
-# Get the magnitudes of the CQT
 CQT_mag = np.abs(CQT)
-
-# Sum along the time axis to get a frequency profile
 freq_profile = np.sum(CQT_mag, axis=1)
+
+# Find the Shruthi
+dominant_freq_index = np.argmax(freq_profile)
+shruthi = librosa.midi_to_note(dominant_freq_index)
+print(shruthi)
 
 # Visualize the chromagram
 plt.figure(figsize=(10, 4))
@@ -36,8 +33,5 @@ plt.colorbar(format='%+2.0f dB')
 plt.title('Constant-Q power spectrogram')
 plt.show()
 
-# Find the index of the maximum value in the frequency profile
-dominant_freq_index = np.argmax(freq_profile)
-shruthi = librosa.midi_to_note(dominant_freq_index)
-print(shruthi)
+
 
