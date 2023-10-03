@@ -1,0 +1,63 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import correlate
+from scipy.io import wavfile
+
+def cgram_tonic1(filename, correction_factor):
+    # Load audio file
+    Fs, y = wavfile.read(filename)
+
+    # Normalize audio signal
+    max_value = np.max(np.abs(y))
+    y = y / max_value
+
+    # Compute autocorrelation
+    autocor = correlate(y, y, 'full') / len(y)
+    lag = np.arange(-(len(y) - 1), len(y))
+    lag_ms = lag / Fs * 1000
+
+    # Calculate the pitch frequencies for Sa, Pa, and Sa2
+    auto = autocor[20:160]
+    sample_no = np.argmax(auto)
+    pitch_period_To = (20 + sample_no) * (1 / Fs) * 1000
+    pitch_period_To_corrected = pitch_period_To * correction_factor
+    pitch_freq_Fo = 1000 / pitch_period_To_corrected
+
+    print(f'Estimated Frequency of Sa: {pitch_freq_Fo:.2f} Hz')
+    print(f'Estimated Frequency of Pa: {pitch_freq_Fo * 3/2:.2f} Hz')  # Assuming equal temperament
+    print(f'Estimated Frequency of Sa2: {pitch_freq_Fo * 2:.2f} Hz')
+
+    # Plot the audio signal
+    plt.subplot(3, 1, 1)
+    t = np.arange(0, len(y)) / Fs
+    plt.plot(t, y)
+    plt.title('Audio Signal')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Amplitude')
+
+    # Plot the autocorrelation
+    plt.subplot(3, 1, 2)
+    plt.plot(lag_ms, autocor)
+    plt.title('Autocorrelation of Audio Signal')
+    plt.xlabel('Lag (ms)')
+    plt.ylabel('Autocorrelation')
+
+    # Plot the pitch detection results
+    plt.subplot(3, 1, 3)
+    plt.plot(lag_ms[20:160], auto)
+    plt.plot(lag_ms[20 + sample_no], auto[sample_no], 'ro', markersize=10)
+    plt.title('Pitch Detection')
+    plt.xlabel('Lag (ms)')
+    plt.ylabel('Autocorrelation')
+    plt.legend(['Autocorrelation', 'Pitch Estimate'])
+
+    plt.tight_layout()
+    plt.show()
+
+    return pitch_freq_Fo
+
+# Main code
+filename = 'A_Shruthi.wav'
+correction_factor = 0.68
+pitch_freq_Fo = cgram_tonic1(filename, correction_factor)
+print(f'Estimated Pitch Frequency (F0): {pitch_freq_Fo:.2f} Hz')
