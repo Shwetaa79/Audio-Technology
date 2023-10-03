@@ -5,20 +5,18 @@ import numpy as np
 
 audio_path = '/content/drive/MyDrive/SEM 7/Audio Technology/Sample Audio Clips/Sami ninne Varnam - Shankarabharana - G#.mp3'
 
-# Load the audio file
 y, sr = librosa.load(audio_path)
-
-# Compute the chromagram
 chroma = librosa.feature.chroma_stft(y=y, sr=sr)
 
 # Compute the Variable-Q Transform
 VQT = librosa.vqt(y, sr=sr)
-
-# Get the magnitudes of the VQT
 VQT_mag = np.abs(VQT)
-
-# Sum along the time axis to get a frequency profile
 freq_profile = np.sum(VQT_mag, axis=1)
+
+# Find the shruthi
+dominant_freq_index = np.argmax(freq_profile)
+shruthi = librosa.midi_to_note(dominant_freq_index)
+print(shruthi)
 
 # Visualize the chromagram
 plt.figure(figsize=(10, 4))
@@ -33,8 +31,3 @@ librosa.display.specshow(librosa.amplitude_to_db(VQT_mag, ref=np.max), sr=sr, x_
 plt.colorbar(format='%+2.0f dB')
 plt.title('Variable-Q power spectrogram')
 plt.show()
-
-# Find the index of the maximum value in the frequency profile
-dominant_freq_index = np.argmax(freq_profile)
-shruthi = librosa.midi_to_note(dominant_freq_index)
-print(shruthi)
